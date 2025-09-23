@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotebookLM 互動式視覺化使用指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+            scroll-behavior: smooth;
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #4285F4, #34A853, #FBBC05, #EA4335);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        nav a.active {
+            color: #4285F4;
+            font-weight: 700;
+        }
+        .flashcard-container {
+            perspective: 1000px;
+        }
+        .flashcard {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .flashcard-front {
+            background-color: #ffffff;
+            color: #1f2937;
+            border: 2px solid #4285F4;
+        }
+        .flashcard-back {
+            background-color: #4285F4;
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .quiz-option {
+            transition: background-color 0.2s;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7 !important; /* light green */
+            border-color: #22c55e !important;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2 !important; /* light red */
+            border-color: #ef4444 !important;
+        }
+        .quiz-option.selected {
+             background-color: #e0e7ff;
+             border-color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://www.gstatic.com/lamda/images/notebooklm/notebook_icon_192_blue.png" alt="NotebookLM Logo" class="w-10 h-10">
+                <h1 class="text-2xl font-bold text-gray-700">NotebookLM 指南</h1>
+            </div>
+            <nav class="hidden md:flex space-x-8 text-gray-600 font-medium">
+                <a href="#intro" class="hover:text-blue-600 transition-colors">簡介</a>
+                <a href="#features" class="hover:text-blue-600 transition-colors">核心功能</a>
+                <a href="#flashcards" class="hover:text-blue-600 transition-colors">學習閃卡</a>
+                <a href="#quiz" class="hover:text-blue-600 transition-colors">實力測驗</a>
+                <a href="#comparison" class="hover:text-blue-600 transition-colors">版本比較</a>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#intro" class="block py-2 px-6 text-sm hover:bg-gray-200">簡介</a>
+            <a href="#features" class="block py-2 px-6 text-sm hover:bg-gray-200">核心功能</a>
+            <a href="#flashcards" class="block py-2 px-6 text-sm hover:bg-gray-200">學習閃卡</a>
+            <a href="#quiz" class="block py-2 px-6 text-sm hover:bg-gray-200">實力測驗</a>
+            <a href="#comparison" class="block py-2 px-6 text-sm hover:bg-gray-200">版本比較</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Introduction Section -->
+        <section id="intro" class="text-center mb-24">
+            <h2 class="text-5xl md:text-6xl font-black mb-4">您的個人化 AI 研究助理</h2>
+            <h3 class="text-5xl md:text-6xl font-black mb-6"><span class="gradient-text">NotebookLM</span></h3>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
+                NotebookLM 是由 Google 開發的 AI 筆記與研究工具，基於強大的 Gemini 模型。它能深入理解您上傳的資料，提供精準摘要、問答與內容生成，並透過「基於來源 (Source-grounding)」技術，確保所有回應都有所依據，大幅降低 AI 幻覺。
+            </p>
+            <div class="flex justify-center space-x-4">
+                <a href="https://notebooklm.google.com/" target="_blank" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-700 transition-transform transform hover:scale-105 shadow-lg">
+                    前往官網 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">探索強大核心功能</h2>
+                <p class="text-gray-500">從資料整理到內容創新，NotebookLM 全方位提升您的效率。</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature Card 1 -->
+                <div class="card p-8">
+                    <div class="text-4xl text-blue-500 mb-4"><i class="fas fa-database"></i></div>
+                    <h3 class="text-2xl font-bold mb-2">多格式來源整合</h3>
+                    <p class="text-gray-600">支援 PDF、Google 文件、網站連結、YouTube 影片、文字檔等，建立您的專屬知識庫。</p>
+                </div>
+                <!-- Feature Card 2 -->
+                <div class="card p-8">
+                    <div class="text-4xl text-green-500 mb-4"><i class="fas fa-robot"></i></div>
+                    <h3 class="text-2xl font-bold mb-2">自動生成指南</h3>
+                    <p class="text-gray-600">上傳資料後，自動生成摘要、學習指南、FAQ、時間軸等實用內容，快速掌握重點。</p>
+                </div>
+                <!-- Feature Card 3 -->
+                <div class="card p-8">
+                    <div class="text-4xl text-yellow-500 mb-4"><i class="fas fa-headphones"></i></div>
+                    <h3 class="text-2xl font-bold mb-2">語音摘要 (Podcast)</h3>
+                    <p class="text-gray-600">將文字內容轉換為對話式音訊，支援多種語言，讓您用聽的學習，隨時隨地吸收知識。</p>
+                </div>
+                <!-- Feature Card 4 -->
+                <div class="card p-8">
+                    <div class="text-4xl text-purple-500 mb-4"><i class="fas fa-lightbulb"></i></div>
+                    <h3 class="text-2xl font-bold mb-2">智能問答與引用</h3>
+                    <p class="text-gray-600">針對您的資料提問，AI 提供附帶引用來源的精準回答，方便您查證與溯源。</p>
+                </div>
+                <!-- Feature Card 5 -->
+                <div class="card p-8">
+                    <div class="text-4xl text-red-500 mb-4"><i class="fas fa-sitemap"></i></div>
+                    <h3 class="text-2xl font-bold mb-2">心智圖視覺化</h3>
+                    <p class="text-gray-600">將筆記或複雜概念轉換為互動式心智圖，幫助您理清思緒、探索知識間的關聯。</p>
+                </div>
+                <!-- Feature Card 6 -->
+                <div class="card p-8">
+                    <div class="text-4xl text-teal-500 mb-4"><i class="fas fa-pen-nib"></i></div>
+                    <h3 class="text-2xl font-bold mb-2">內容生成與草擬</h3>
+                    <p class="text-gray-600">基於您的知識庫，協助撰寫報告大綱、論文摘要、社群貼文、企劃草案等，激發創作靈感。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flashcards Section -->
+        <section id="flashcards" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">互動學習閃卡</h2>
+                <p class="text-gray-500">點擊卡片來翻面並查看答案，快速鞏固 NotebookLM 的核心知識！(共 <span id="flashcard-count">0</span> 題)</p>
+            </div>
+            <div id="flashcard-grid" class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Flashcards will be injected here by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">實力測驗挑戰</h2>
+                <p class="text-gray-500">來測試一下您的學習成果吧！看看您對 NotebookLM 的了解有多深。(共 <span id="quiz-question-count">0</span> 題)</p>
+            </div>
+            <div class="card max-w-4xl mx-auto p-8">
+                <div id="quiz-container">
+                    <!-- Quiz content will be injected here -->
+                </div>
+                <div id="quiz-result" class="hidden text-center">
+                    <h3 class="text-3xl font-bold mb-4">測驗完成！</h3>
+                    <p class="text-xl mb-6">您答對了 <span id="score" class="font-bold text-blue-600"></span> / <span id="total-questions" class="font-bold"></span> 題。</p>
+                    <div id="score-feedback" class="text-lg font-medium mb-8"></div>
+                    <button id="restart-quiz-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-700 transition-transform transform hover:scale-105">
+                        重新測驗
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Comparison Section -->
+        <section id="comparison" class="mb-24">
+             <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">版本功能比較</h2>
+                <p class="text-gray-500">了解免費版與付費版 (Plus) 的主要差異，選擇最適合您的方案。</p>
+            </div>
+            <div class="max-w-5xl mx-auto overflow-x-auto">
+                <table class="w-full min-w-max text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 font-bold text-lg border-b-2 border-gray-300">功能</th>
+                            <th class="p-4 font-bold text-lg border-b-2 border-gray-300 text-center">免費版</th>
+                            <th class="p-4 font-bold text-lg border-b-2 border-gray-300 text-center bg-blue-100 text-blue-800">Plus 版 (需訂閱 Google One AI Premium)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 border-b border-gray-200 font-medium">筆記本數量</td>
+                            <td class="p-4 border-b border-gray-200 text-center">最多 100 個</td>
+                            <td class="p-4 border-b border-gray-200 text-center font-semibold text-blue-700">最多 500 個</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 border-b border-gray-200 font-medium">每個筆記本的來源數</td>
+                            <td class="p-4 border-b border-gray-200 text-center">最多 50 個</td>
+                            <td class="p-4 border-b border-gray-200 text-center font-semibold text-blue-700">最多 300 個</td>
+                        </tr>
+                         <tr class="hover:bg-gray-50">
+                            <td class="p-4 border-b border-gray-200 font-medium">每個來源的字數</td>
+                            <td class="p-4 border-b border-gray-200 text-center">最多 50 萬字</td>
+                            <td class="p-4 border-b border-gray-200 text-center font-semibold text-blue-700">通常更高</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 border-b border-gray-200 font-medium">每日訊息額度</td>
+                            <td class="p-4 border-b border-gray-200 text-center">最多 50 次</td>
+                            <td class="p-4 border-b border-gray-200 text-center font-semibold text-blue-700">最多 500 次</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 border-b border-gray-200 font-medium">每日語音摘要生成</td>
+                            <td class="p-4 border-b border-gray-200 text-center">最多 3 個</td>
+                            <td class="p-4 border-b border-gray-200 text-center font-semibold text-blue-700">最多 20 個</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 border-b border-gray-200 font-medium">進階功能</td>
+                            <td class="p-4 border-b border-gray-200 text-center">基本功能完整</td>
+                            <td class="p-4 border-b border-gray-200 text-center font-semibold text-blue-700">自訂回覆風格、進階協作等</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white text-center py-6">
+        <p>&copy; <span id="current-year"></span> NotebookLM 互動式視覺化使用指南. </p>
+        <p class="text-sm text-gray-400">本指南彙整自公開資訊，僅供學習參考。所有商標均歸其各自所有者所有。</p>
+    </footer>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- Mobile Menu ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // --- Data for Flashcards & Quiz ---
+        const learningData = [
+            // Basics
+            { q: "NotebookLM 是由哪個公司開發的？", a: "Google", type: "flash" },
+            { q: "NotebookLM 的核心 AI 模型是什麼？", a: "Gemini", type: "flash" },
+            { q: "NotebookLM 的『Source-grounding』技術主要作用是什麼？", a: "確保 AI 回應基於使用者上傳的資料，降低 AI 幻覺。", type: "flash" },
+            { q: "NotebookLM 主要的用途是什麼？", a: "作為個人的 AI 研究與筆記助理，處理和分析特定資料。", type: "flash" },
+            { q: "NotebookLM 與一般聊天機器人最大的不同點為何？", a: "它不會從公開網路搜尋答案，只會根據你提供的來源文件作答。", type: "flash" },
+
+            // Sources
+            { q: "NotebookLM 支援哪些文件格式？", a: "PDF, Google Docs/Slides, TXT, Markdown 等。", type: "flash" },
+            { q: "我可以上傳 YouTube 影片連結當作來源嗎？", a: "可以，NotebookLM 會分析影片的字幕或語音轉錄稿。", type: "flash" },
+            { q: "免費版的 NotebookLM，每個筆記本最多可以加入多少個來源？", a: "50 個來源", type: "flash" },
+            { q: "上傳的單一來源文件，字數上限大約是多少？", a: "約 50 萬字", type: "flash" },
+            { q: "將 Google Drive 的檔案加入來源後，如果我修改了原始檔案，NotebookLM 會自動更新嗎？", a: "不會，需要手動重新同步或上傳。", type: "flash" },
+            { q: "NotebookLM 可以讀取需要登入才能瀏覽的網頁內容嗎？", a: "不行，只能擷取公開的網頁文字內容。", type: "flash" },
+             { q: "如何讓 NotebookLM 參考我自己手寫的筆記？", a: "先將筆記儲存到『記事 (Notes)』中，再將該則記事轉換為來源。", type: "flash" },
+
+            // Features
+            { q: "NotebookLM 的『語音摘要 (Audio Overviews)』功能是什麼？", a: "將來源內容轉換成對話式 Podcast 音訊檔。", type: "flash" },
+            { q: "上傳資料後，NotebookLM 會自動生成哪些內容？", a: "摘要、學習指南、FAQ、時間軸等。", type: "flash" },
+            { q: "NotebookLM 可以將內容視覺化成什麼圖表？", a: "心智圖 (Mind Map)", type: "flash" },
+            { q: "NotebookLM 的回答會附上什麼重要資訊以便查證？", a: "引用來源的編號。", type: "flash" },
+            { q: "當我的問題超出上傳資料的範圍時，NotebookLM 會如何回應？", a: "它會誠實地告知在目前的來源中找不到相關資訊。", type: "flash" },
+            { q: "『研讀指南 (Study Guide)』功能包含哪些項目？", a: "學習重點、測驗題與答案、重要詞彙等。", type: "flash" },
+
+            // Interface & Usage
+            { q: "NotebookLM 的操作介面主要分為哪三個核心部分？", a: "來源 (Sources)、對話 (Chat) 和 Studio (記事/指南)。", type: "flash" },
+            { q: "在對話視窗中與 AI 的對話紀錄會自動儲存嗎？", a: "不會，重要的內容需要手動釘選或儲存至『記事 (Notes)』。", type: "flash" },
+            { q: "儲存到『記事』中的內容，AI 會自動納入參考嗎？", a: "預設不會，需要手動將該則記事『轉換為來源』。", type: "flash" },
+            { q: "NotebookLM 有提供行動 App 嗎？", a: "有，已在 iOS 和 Android 平台推出。", type: "flash" },
+            { q: "使用 NotebookLM 需要什麼帳號登入？", a: "Google (Gmail) 帳號。", type: "flash" },
+            
+            // Versions & Limits
+            { q: "NotebookLM 免費版每日的訊息額度是多少？", a: "50 次", type: "flash" },
+            { q: "NotebookLM Plus 付費版每日的訊息額度是多少？", a: "500 次", type: "flash" },
+            { q: "免費版一天可以生成幾個語音摘要？", a: "3 個", type: "flash" },
+            { q: "付費版一天可以生成幾個語音摘要？", a: "20 個", type: "flash" },
+            { q: "免費版最多可以建立多少個筆記本？", a: "100 個", type: "flash" },
+            { q: "要使用 NotebookLM Plus 版，需要訂閱哪項 Google 服務？", a: "Google One AI Premium (進階方案)", type: "flash" },
+
+            // Quiz questions
+            { 
+                q: "以下哪個不是 NotebookLM 支援的來源格式？", 
+                options: ["PDF 檔案", "YouTube 影片連結", "Instagram 私人貼文連結", "公開的網站連結"],
+                a: "Instagram 私人貼文連結", 
+                type: "quiz" 
+            },
+            {
+                q: "NotebookLM 的『Source-grounding』技術，最主要的好處是什麼？",
+                options: ["讓回應速度更快", "大幅降低 AI 產生錯誤或虛構資訊 (幻覺) 的機率", "可以翻譯更多種語言", "自動美化筆記排版"],
+                a: "大幅降低 AI 產生錯誤或虛構資訊 (幻覺) 的機率",
+                type: "quiz"
+            },
+            {
+                q: "當你想把一段重要的 AI 回應保存下來，應該使用哪個功能？",
+                options: ["螢幕截圖", "複製文字到其他軟體", "釘選或儲存至『記事 (Notes)』", "AI 會自動記住"],
+                a: "釘選或儲存至『記事 (Notes)』",
+                type: "quiz"
+            },
+            {
+                q: "NotebookLM 的『語音摘要 (Audio Overviews)』功能會產出什麼？",
+                options: ["一段背景音樂", "一份純文字的逐字稿", "一個類似 Podcast 的對話式音訊檔", "一段摘要影片"],
+                a: "一個類似 Podcast 的對話式音訊檔",
+                type: "quiz"
+            },
+            {
+                q: "NotebookLM 免費版每個筆記本最多能放入多少個來源？",
+                options: ["10個", "20個", "50個", "100個"],
+                a: "50個",
+                type: "quiz"
+            },
+            {
+                q: "NotebookLM 是基於哪個強大的 AI 模型？",
+                options: ["GPT-4", "Claude 3", "Llama 3", "Gemini"],
+                a: "Gemini",
+                type: "quiz"
+            },
+            {
+                q: "如果你想讓 AI 參考你手動輸入的重點整理，你應該怎麼做？",
+                options: ["直接在對話框貼上", "將重點儲存為記事，再將該記事轉換為來源", "大聲念出來讓 AI 聽", "無法做到"],
+                a: "將重點儲存為記事，再將該記事轉換為來源",
+                type: "quiz"
+            },
+            {
+                q: "NotebookLM在哪個情境下『不』適用？",
+                options: ["整理學術論文重點", "分析公司內部財報製作摘要", "為個人旅遊計畫尋找公開網路上的最新資訊", "學習線上課程的影片內容"],
+                a: "為個人旅遊計畫尋找公開網路上的最新資訊",
+                type: "quiz"
+            },
+             {
+                q: "NotebookLM 免費版每日的對話訊息上限是幾次？",
+                options: ["20 次", "50 次", "100 次", "沒有限制"],
+                a: "50 次",
+                type: "quiz"
+            },
+             {
+                q: "使用心智圖 (Mind Map) 功能可以幫助我們做什麼？",
+                options: ["直接編輯原始文件", "將知識點視覺化，理清結構與關聯", "製作動畫簡報", "即時與他人視訊通話"],
+                a: "將知識點視覺化，理清結構與關聯",
+                type: "quiz"
+            },
+            {
+                q: "如果你的問題超出了上傳資料的範圍，NotebookLM 會？",
+                options: ["從網路上搜尋答案給你", "編造一個最可能的答案", "誠實告知在來源中找不到資訊", "當機並顯示錯誤訊息"],
+                a: "誠實告知在來源中找不到資訊",
+                type: "quiz"
+            },
+            {
+                q: "『研讀指南 (Study Guide)』功能最適合用於以下哪個場景？",
+                options: ["產生行銷文案", "準備學校考試或專業認證", "撰寫程式碼", "設計使用者介面"],
+                a: "準備學校考試或專業認證",
+                type: "quiz"
+            },
+            {
+                q: "NotebookLM Plus 付費版提供的主要優勢不包含以下哪一項？",
+                options: ["更高的來源數量與訊息額度", "專屬的真人一對一家教服務", "進階的協作功能", "可自訂 AI 回覆的風格"],
+                a: "專屬的真人一對一家教服務",
+                type: "quiz"
+            },
+            {
+                q: "NotebookLM 的 AI 回應旁邊的數字代表什麼？",
+                options: ["回應的字數", "回應的可信度分數", "生成該回應所參考的來源文件編號", "目前是第幾次回應"],
+                a: "生成該回應所參考的ของ來源文件編號",
+                type: "quiz"
+            },
+             {
+                q: "以下對於 NotebookLM 的描述何者『錯誤』？",
+                options: ["可以作為個人的知識庫管理工具", "適合需要精準、有根據資訊的研究場景", "可以完全取代人類的批判性思考與專業判斷", "支援中文介面與內容分析"],
+                a: "可以完全取代人類的批判性思考與專業判斷",
+                type: "quiz"
+            }
+        ];
+
+        const flashcards = learningData.filter(item => item.type === 'flash');
+        const quizQuestions = learningData.filter(item => item.type === 'quiz');
+
+        // --- Flashcard Logic ---
+        const flashcardGrid = document.getElementById('flashcard-grid');
+        document.getElementById('flashcard-count').textContent = flashcards.length;
+
+        flashcards.forEach(cardData => {
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'flashcard-container';
+
+            const card = document.createElement('div');
+            card.className = 'flashcard';
+
+            const front = document.createElement('div');
+            front.className = 'flashcard-face flashcard-front';
+            front.innerHTML = `<p class="text-lg font-semibold">${cardData.q}</p>`;
+
+            const back = document.createElement('div');
+            back.className = 'flashcard-face flashcard-back';
+            back.innerHTML = `<p class="text-md">${cardData.a}</p>`;
+            
+            card.appendChild(front);
+            card.appendChild(back);
+            cardContainer.appendChild(card);
+            flashcardGrid.appendChild(cardContainer);
+
+            card.addEventListener('click', () => {
+                card.classList.toggle('is-flipped');
+            });
+        });
+
+        // --- Quiz Logic ---
+        const quizContainer = document.getElementById('quiz-container');
+        const quizResult = document.getElementById('quiz-result');
+        const scoreEl = document.getElementById('score');
+        const scoreFeedback = document.getElementById('score-feedback');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        document.getElementById('quiz-question-count').textContent = quizQuestions.length;
+        document.getElementById('total-questions').textContent = quizQuestions.length;
+        
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function loadQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            quizResult.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            showQuestion(currentQuestionIndex);
+        }
+
+        function showQuestion(index) {
+            const question = quizQuestions[index];
+            quizContainer.innerHTML = `
+                <div class="mb-6">
+                    <p class="text-gray-500 font-medium">問題 ${index + 1} / ${quizQuestions.length}</p>
+                    <h3 class="text-2xl font-bold mt-2">${question.q}</h3>
+                </div>
+                <div id="options-container" class="space-y-4">
+                    ${question.options.map((option, i) => `
+                        <button class="quiz-option block w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-100 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" data-option="${option}">
+                           <span class="font-bold mr-3">${String.fromCharCode(65 + i)}.</span> ${option}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="mt-8 text-right">
+                     <button id="next-btn" class="bg-gray-300 text-gray-600 font-bold py-2 px-6 rounded-full cursor-not-allowed" disabled>下一題</button>
+                </div>
+            `;
+
+            const optionsContainer = document.getElementById('options-container');
+            const nextBtn = document.getElementById('next-btn');
+
+            optionsContainer.addEventListener('click', e => {
+                const selectedBtn = e.target.closest('.quiz-option');
+                if (!selectedBtn) return;
+                
+                // Remove selected from all options
+                optionsContainer.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+                // Add selected to the clicked one
+                selectedBtn.classList.add('selected');
+
+                userAnswers[index] = selectedBtn.dataset.option;
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
+                nextBtn.classList.add('bg-blue-600', 'text-white');
+            });
+
+            nextBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizQuestions.length) {
+                    showQuestion(currentQuestionIndex);
+                } else {
+                    showResults();
+                }
+            });
+        }
+        
+        function showResults() {
+             score = 0;
+             quizQuestions.forEach((question, index) => {
+                if (userAnswers[index] === question.a) {
+                    score++;
+                }
+             });
+
+            quizContainer.classList.add('hidden');
+            quizResult.classList.remove('hidden');
+            scoreEl.textContent = score;
+            
+            const percentage = (score / quizQuestions.length) * 100;
+            if (percentage === 100) {
+                scoreFeedback.textContent = "太棒了，完全正確！您是 NotebookLM 大師！";
+                scoreFeedback.className = "text-lg font-medium mb-8 text-green-600";
+            } else if (percentage >= 70) {
+                scoreFeedback.textContent = "表現優異！您對 NotebookLM 有很深入的了解。";
+                scoreFeedback.className = "text-lg font-medium mb-8 text-blue-600";
+            } else if (percentage >= 50) {
+                scoreFeedback.textContent = "還不錯！可以再複習一下閃卡來加深印象喔。";
+                scoreFeedback.className = "text-lg font-medium mb-8 text-yellow-600";
+            } else {
+                scoreFeedback.textContent = "別氣餒，再試一次！多操作幾次 NotebookLM 會更有感覺。";
+                scoreFeedback.className = "text-lg font-medium mb-8 text-red-600";
+            }
+        }
+
+        restartQuizBtn.addEventListener('click', loadQuiz);
+
+        loadQuiz();
+
+        // --- Footer Year ---
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    });
+    </script>
+</body>
+</html>
