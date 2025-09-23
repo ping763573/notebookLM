@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotebookLM 完整使用指南 2025</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-fixed">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>NotebookLM 指南</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#overview" class="nav-link">概覽介紹</a></li>
+                <li><a href="#core-features" class="nav-link">核心功能</a></li>
+                <li><a href="#version-comparison" class="nav-link">版本比較</a></li>
+                <li><a href="#new-features" class="nav-link">最新功能</a></li>
+                <li><a href="#use-cases" class="nav-link">實用案例</a></li>
+                <li><a href="#download" class="nav-link">下載安裝</a></li>
+            </ul>
+            <button class="nav-toggle">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">NotebookLM 完整使用指南 2025</h1>
+            <p class="hero-subtitle">最新互動式視覺化指南，掌握 Google AI 筆記工具的所有功能</p>
+            <button class="btn btn--primary btn--lg hero-cta">開始探索</button>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-card">
+                <img src="https://pplx-res.cloudinary.com/image/upload/v1758594092/pplx_project_search_images/16e975161f9cadfe2d21704133b7c05f7cad5ca3.png" alt="NotebookLM 工作室介面" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="section">
+        <div class="container">
+            <h2 class="section-title">概覽介紹</h2>
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="overview-icon">🤖</div>
+                    <h3>什麼是 NotebookLM</h3>
+                    <p>Google 開發的 AI 筆記工具，以 Gemini 大型語言模型為核心，專為處理和分析用戶上傳的特定資料而設計</p>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">⚡</div>
+                    <h3>核心技術</h3>
+                    <p>Gemini 多模態語言模型驅動，支援文字、音訊、影片等多種格式處理</p>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">🎯</div>
+                    <h3>關鍵特色</h3>
+                    <p>Source-grounding 功能確保所有回答都基於您上傳的特定資料，大幅降低 AI 幻覺問題</p>
+                </div>
+            </div>
+            <div class="target-users">
+                <h3>適用人群</h3>
+                <div class="users-tags">
+                    <span class="user-tag">學生</span>
+                    <span class="user-tag">研究人員</span>
+                    <span class="user-tag">內容創作者</span>
+                    <span class="user-tag">教師</span>
+                    <span class="user-tag">專案經理</span>
+                    <span class="user-tag">分析師</span>
+                    <span class="user-tag">開發者</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Features Section -->
+    <section id="core-features" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">核心功能</h2>
+            <div class="features-grid">
+                <div class="feature-card" data-feature="sources">
+                    <div class="feature-icon">📄</div>
+                    <h3>來源管理</h3>
+                    <p>支援 PDF、Google 文件、網站連結、YouTube 影片、音訊檔案等多種格式</p>
+                    <button class="btn btn--secondary expand-btn">了解更多</button>
+                    <div class="feature-details hidden">
+                        <ul>
+                            <li>支援上傳最多 50 個不同格式的文件</li>
+                            <li>自動解析和索引內容</li>
+                            <li>智能標籤和分類功能</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card" data-feature="audio">
+                    <div class="feature-icon">🎧</div>
+                    <h3>語音摘要</h3>
+                    <p>將來源內容轉換為對話式音訊檔案，支援超過 50 種語言</p>
+                    <button class="btn btn--secondary expand-btn">了解更多</button>
+                    <div class="feature-details hidden">
+                        <ul>
+                            <li>AI 生成自然對話形式的音訊</li>
+                            <li>可自訂語調和說話速度</li>
+                            <li>支援離線播放和下載</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card" data-feature="video">
+                    <div class="feature-icon">🎬</div>
+                    <h3>影片摘要</h3>
+                    <p>生成配有旁白的簡報式影片，支援 80 種語言包括繁體中文</p>
+                    <button class="btn btn--secondary expand-btn">了解更多</button>
+                    <div class="feature-details hidden">
+                        <ul>
+                            <li>自動生成視覺化簡報影片</li>
+                            <li>支援繁體中文語音合成</li>
+                            <li>可自訂影片樣式和主題</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card" data-feature="mindmap">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>心智圖</h3>
+                    <p>將筆記內容視覺化為主題分支結構的心智圖</p>
+                    <button class="btn btn--secondary expand-btn">了解更多</button>
+                    <div class="feature-details hidden">
+                        <ul>
+                            <li>自動提取關鍵概念和關係</li>
+                            <li>互動式節點展開和收起</li>
+                            <li>支援匯出多種格式</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card" data-feature="flashcards">
+                    <div class="feature-icon">🃏</div>
+                    <h3>學習卡</h3>
+                    <p>自動生成記憶卡片，協助記憶關鍵術語和核心概念</p>
+                    <button class="btn btn--secondary expand-btn">了解更多</button>
+                    <div class="feature-details hidden">
+                        <ul>
+                            <li>智能提取重要概念</li>
+                            <li>支援間隔重複學習法</li>
+                            <li>可自訂卡片難度</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card" data-feature="quiz">
+                    <div class="feature-icon">❓</div>
+                    <h3>測驗</h3>
+                    <p>基於上傳資料生成互動式測驗題目</p>
+                    <button class="btn btn--secondary expand-btn">了解更多</button>
+                    <div class="feature-details hidden">
+                        <ul>
+                            <li>多種題型：選擇題、填空題、問答題</li>
+                            <li>自動評分和詳細解釋</li>
+                            <li>學習進度追蹤</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Version Comparison Section -->
+    <section id="version-comparison" class="section">
+        <div class="container">
+            <h2 class="section-title">版本比較</h2>
+            <div class="comparison-container">
+                <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/55b18b341d0607802157fe95c40cfa3a/2a187342-0912-41b8-9cc5-8893fbe88629/b37909df.png" alt="NotebookLM 版本比較" class="comparison-chart" />
+                <div class="comparison-table">
+                    <div class="comparison-column free">
+                        <h3>免費版</h3>
+                        <div class="price">免費</div>
+                        <ul class="feature-list">
+                            <li>✅ 最多 100 個筆記本</li>
+                            <li>✅ 每個筆記本最多 50 個來源</li>
+                            <li>✅ 每日最多 50 次查詢</li>
+                            <li>✅ 每日最多 3 個語音摘要</li>
+                            <li>✅ 所有基本功能</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-column plus">
+                        <h3>付費版</h3>
+                        <div class="price">NT$650/月</div>
+                        <div class="price-note">(透過 Google One AI Premium)</div>
+                        <ul class="feature-list">
+                            <li>✅ 最多 500 個筆記本</li>
+                            <li>✅ 每個筆記本最多 300 個來源</li>
+                            <li>✅ 每日最多 500 次查詢</li>
+                            <li>✅ 每日最多 20 個語音摘要</li>
+                            <li>✅ 自訂回應風格</li>
+                            <li>✅ 進階協作功能</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Features Section -->
+    <section id="new-features" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">2025年最新功能</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年5月</div>
+                    <div class="timeline-content">
+                        <h3>行動版 App</h3>
+                        <p>iOS 和 Android 版本正式上線，支援離線播放</p>
+                        <img src="https://pplx-res.cloudinary.com/image/upload/v1758594092/pplx_project_search_images/7162b17f0baa73370b61e9ada258fe129c6ab27b.png" alt="NotebookLM 行動版" class="timeline-image" />
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年8月</div>
+                    <div class="timeline-content">
+                        <h3>影片摘要中文支援</h3>
+                        <p>Video Overviews 功能現已支援繁體中文等 80 種語言</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年9月</div>
+                    <div class="timeline-content">
+                        <h3>學習卡和測驗</h3>
+                        <p>新增互動式學習卡和測驗功能，支援自訂難度和主題</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section id="use-cases" class="section">
+        <div class="container">
+            <h2 class="section-title">實用應用案例</h2>
+            <div class="cases-container">
+                <div class="case-tabs">
+                    <button class="case-tab active" data-case="academic">學術研究</button>
+                    <button class="case-tab" data-case="business">商業分析</button>
+                    <button class="case-tab" data-case="education">教育培訓</button>
+                </div>
+                <div class="case-content">
+                    <div class="case-panel active" data-case="academic">
+                        <h3>學術研究</h3>
+                        <p>整理大量文獻，生成摘要和學習指南</p>
+                        <ul class="benefits-list">
+                            <li>快速理解複雜論文</li>
+                            <li>自動引用標註</li>
+                            <li>生成複習材料</li>
+                        </ul>
+                    </div>
+                    <div class="case-panel" data-case="business">
+                        <h3>商業分析</h3>
+                        <p>分析市場報告和競品資料</p>
+                        <ul class="benefits-list">
+                            <li>快速提取關鍵洞察</li>
+                            <li>生成簡報內容</li>
+                            <li>團隊協作分享</li>
+                        </ul>
+                    </div>
+                    <div class="case-panel" data-case="education">
+                        <h3>教育培訓</h3>
+                        <p>製作課程內容和學習材料</p>
+                        <ul class="benefits-list">
+                            <li>自動生成測驗題</li>
+                            <li>創建互動學習卡</li>
+                            <li>製作音訊課程</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">下載安裝</h2>
+            <div class="download-grid">
+                <div class="download-card">
+                    <div class="download-icon">🌐</div>
+                    <h3>網頁版</h3>
+                    <p>直接透過瀏覽器使用</p>
+                    <div class="download-requirements">需要 Google 帳號</div>
+                    <a href="https://notebooklm.google.com" target="_blank" class="btn btn--primary">立即使用</a>
+                </div>
+                <div class="download-card">
+                    <div class="download-icon">📱</div>
+                    <h3>iOS App</h3>
+                    <p>iPhone 和 iPad 專用版本</p>
+                    <div class="download-requirements">iOS 17.0 或以上版本</div>
+                    <button class="btn btn--outline" disabled>App Store (即將推出)</button>
+                </div>
+                <div class="download-card">
+                    <div class="download-icon">🤖</div>
+                    <h3>Android App</h3>
+                    <p>Android 設備專用版本</p>
+                    <div class="download-requirements">Android 10 或以上版本</div>
+                    <button class="btn btn--outline" disabled>Google Play (即將推出)</button>
+                </div>
+            </div>
+            <div class="mobile-preview">
+                <img src="https://pplx-res.cloudinary.com/image/upload/v1755724874/pplx_project_search_images/49dfa5ace929b285460cd7be93b6c2288b5480b4.png" alt="NotebookLM 行動版介面" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 NotebookLM 使用指南 - 非官方教學網站</p>
+            <p>本網站內容僅供教學參考，實際功能請以 Google NotebookLM 官方為準</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
