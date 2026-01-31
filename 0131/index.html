@@ -265,6 +265,12 @@
             border: 1px solid #fbb6b6;
         }
         
+        .status.info {
+            background-color: #e8f4fd;
+            color: #2c5282;
+            border: 1px solid #90cdf4;
+        }
+        
         footer {
             text-align: center;
             margin-top: 40px;
@@ -326,7 +332,7 @@
             </section>
             
             <section class="preview-section" id="previewSection" style="display: none;">
-                <h3 class="section-title"><i class="fas fa-images"></i> PDF 頁面預覽</h3>
+                <h3 class="section-title"><i class="fas fa-images"></i> PDF 頁面預覽（最多顯示50頁）</h3>
                 <div class="preview-container" id="previewContainer">
                     <!-- PDF 頁面預覽將在此處動態生成 -->
                 </div>
@@ -354,6 +360,7 @@
         
         <footer>
             <p>本工具完全在瀏覽器中運行，不會將您的文件上傳到任何伺服器，確保資料安全。</p>
+            <p>支援最多200頁PDF轉換，超大檔案建議分批處理以獲得最佳效能</p>
             <p>使用 PDF.js、jsPDF、html2canvas 和 PptxGenJS 技術開發</p>
         </footer>
     </div>
@@ -363,6 +370,10 @@
         let pdfDocument = null;
         let pdfImages = [];
         let fileName = "";
+        
+        // 設定常數
+        const MAX_PREVIEW_PAGES = 50; // 預覽最多顯示50頁
+        const MAX_PDF_SIZE = 100 * 1024 * 1024; // 最大PDF檔案大小100MB
         
         // DOM 元素
         const fileInput = document.getElementById('fileInput');
@@ -417,6 +428,13 @@
                 return;
             }
             
+            // 檢查檔案大小
+            if (file.size > MAX_PDF_SIZE) {
+                showStatus(`檔案過大（超過${formatFileSize(MAX_PDF_SIZE)}），建議壓縮後再上傳`, 'error');
+                fileInput.value = '';
+                return;
+            }
+            
             fileInfo.textContent = `已選擇: ${file.name} (${formatFileSize(file.size)})`;
             loadPDF(file);
         }
@@ -430,13 +448,23 @@
                 const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
                 pdfDocument = await loadingTask.promise;
                 
+                // 顯示總頁數資訊
+                const pageCount = pdfDocument.numPages;
+                fileInfo.textContent += `，共 ${pageCount} 頁`;
+                
                 // 顯示預覽區
                 previewSection.style.display = 'block';
                 
                 // 生成頁面預覽
                 await generatePreviews();
                 
-                showStatus('PDF 載入成功！現在可以開始轉換。', 'success');
+                showStatus(`PDF 載入成功！共 ${pageCount} 頁，現在可以開始轉換。`, 'success');
+                
+                // 如果頁數很多，給予提示
+                if (pageCount > 100) {
+                    showStatus('注意：PDF 頁數較多，轉換可能需要較長時間，請耐心等待', 'info');
+                }
+                
             } catch (error) {
                 console.error('載入 PDF 失敗:', error);
                 showStatus('載入 PDF 檔案失敗，請確認檔案格式正確', 'error');
@@ -449,45 +477,73 @@
             pdfImages = [];
             
             // 限制預覽頁數，避免效能問題
-            const pageCount = Math.min(pdfDocument.numPages, 20);
+            const pageCount = Math.min(pdfDocument.numPages, MAX_PREVIEW_PAGES);
             
             for (let i = 1; i <= pageCount; i++) {
-                const page = await pdfDocument.getPage(i);
+                try {
+                    const page = await pdfDocument.getPage(i);
+                    
+                    // 設定渲染選項（較低解析度用於預覽）
+                    const viewport = page.getViewport({ scale: 0.25 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    // 渲染頁面到 canvas
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+                    
+                    // 將 canvas 轉為圖片 URL
+                    const imgUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    pdfImages.push(imgUrl);
+                    
+                    // 建立預覽元素
+                    const pagePreview = document.createElement('div');
+                    pagePreview.className = 'page-preview';
+                    pagePreview.innerHTML = `
+                        <img src="${imgUrl}" alt="PDF 第 ${i} 頁">
+                        <div class="page-number">第 ${i} 頁</div>
+                    `;
+                    
+                    previewContainer.appendChild(pagePreview);
+                    
+                    // 釋放記憶體
+                    page.cleanup();
+                    canvas.width = 0;
+                    canvas.height = 0;
+                    
+                } catch (error) {
+                    console.error(`預覽第 ${i} 頁失敗:`, error);
+                    // 建立錯誤預覽元素
+                    const pagePreview = document.createElement('div');
+                    pagePreview.className = 'page-preview';
+                    pagePreview.innerHTML = `
+                        <img src="" alt="預覽載入失敗" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                        <div class="page-number">第 ${i} 頁 (載入失敗)</div>
+                    `;
+                    previewContainer.appendChild(pagePreview);
+                }
                 
-                // 設定渲染選項
-                const viewport = page.getViewport({ scale: 0.3 });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                
-                // 渲染頁面到 canvas
-                await page.render({
-                    canvasContext: context,
-                    viewport: viewport
-                }).promise;
-                
-                // 將 canvas 轉為圖片 URL
-                const imgUrl = canvas.toDataURL('image/jpeg', 0.8);
-                pdfImages.push(imgUrl);
-                
-                // 建立預覽元素
-                const pagePreview = document.createElement('div');
-                pagePreview.className = 'page-preview';
-                pagePreview.innerHTML = `
-                    <img src="${imgUrl}" alt="PDF 第 ${i} 頁">
-                    <div class="page-number">第 ${i} 頁</div>
-                `;
-                
-                previewContainer.appendChild(pagePreview);
-                
-                // 釋放記憶體
-                page.cleanup();
+                // 每處理5頁稍微暫停一下，避免UI卡頓
+                if (i % 5 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+            }
+            
+            // 如果實際頁數超過預覽限制，顯示提示
+            if (pdfDocument.numPages > MAX_PREVIEW_PAGES) {
+                const infoMsg = document.createElement('div');
+                infoMsg.style.cssText = 'width: 100%; text-align: center; padding: 10px; color: #666; font-style: italic;';
+                infoMsg.textContent = `... 還有 ${pdfDocument.numPages - MAX_PREVIEW_PAGES} 頁未顯示`;
+                previewContainer.appendChild(infoMsg);
             }
         }
         
-        // 轉換為 PPTX
+        // 轉換為 PPTX - 優化版本，支援更多頁數
         async function convertToPPTX() {
             if (!pdfDocument) {
                 showStatus('請先上傳 PDF 檔案', 'error');
@@ -514,68 +570,117 @@
                 
                 // 轉換每一頁
                 const totalPages = pdfDocument.numPages;
+                let successPages = 0;
+                let failedPages = 0;
+                
+                // 檢查頁數，如果太多給予提示
+                if (totalPages > 100) {
+                    showStatus('注意：PDF 頁數較多，轉換可能需要較長時間，請勿關閉頁面', 'info');
+                }
+                
+                // 計算最優化的解析度和品質
+                const scale = totalPages > 80 ? 1.0 : (totalPages > 40 ? 1.2 : 1.5);
+                const quality = totalPages > 80 ? 0.7 : (totalPages > 40 ? 0.8 : 0.9);
                 
                 for (let i = 1; i <= totalPages; i++) {
-                    // 更新進度
-                    const progress = Math.round((i / totalPages) * 100);
-                    progressFill.style.width = `${progress}%`;
-                    progressText.textContent = `正在轉換第 ${i} / ${totalPages} 頁...`;
-                    
-                    // 取得頁面
-                    const page = await pdfDocument.getPage(i);
-                    
-                    // 設定渲染選項（較高解析度）
-                    const viewport = page.getViewport({ scale: 1.5 });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    
-                    // 渲染頁面到 canvas
-                    await page.render({
-                        canvasContext: context,
-                        viewport: viewport
-                    }).promise;
-                    
-                    // 將 canvas 轉為圖片 URL
-                    const imgUrl = canvas.toDataURL('image/jpeg', 0.9);
-                    
-                    // 新增投影片並加入圖片
-                    const slide = pptx.addSlide();
-                    
-                    // 計算圖片在投影片中的尺寸和位置
-                    const slideWidth = 10; // 投影片寬度 (英吋)
-                    const slideHeight = 5.625; // 投影片高度 (英吋)
-                    const imgRatio = canvas.width / canvas.height;
-                    
-                    let imgWidth, imgHeight, imgX, imgY;
-                    
-                    if (imgRatio > slideWidth / slideHeight) {
-                        // 圖片較寬，以寬度為基準
-                        imgWidth = slideWidth;
-                        imgHeight = slideWidth / imgRatio;
-                        imgX = 0;
-                        imgY = (slideHeight - imgHeight) / 2;
-                    } else {
-                        // 圖片較高，以高度為基準
-                        imgHeight = slideHeight;
-                        imgWidth = slideHeight * imgRatio;
-                        imgX = (slideWidth - imgWidth) / 2;
-                        imgY = 0;
+                    try {
+                        // 定期釋放記憶體（每10頁）
+                        if (i % 10 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 30)); // 短暫暫停讓瀏覽器回收記憶體
+                        }
+                        
+                        // 更新進度
+                        const progress = Math.round((i / totalPages) * 100);
+                        progressFill.style.width = `${progress}%`;
+                        progressText.textContent = `正在轉換第 ${i} / ${totalPages} 頁...`;
+                        
+                        // 取得頁面
+                        const page = await pdfDocument.getPage(i);
+                        
+                        // 設定渲染選項 - 根據頁數調整解析度
+                        const viewport = page.getViewport({ scale: scale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        
+                        // 渲染頁面到 canvas
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
+                        
+                        // 將 canvas 轉為圖片 URL (根據頁數調整品質)
+                        const imgUrl = canvas.toDataURL('image/jpeg', quality);
+                        
+                        // 新增投影片並加入圖片
+                        const slide = pptx.addSlide();
+                        
+                        // 計算圖片在投影片中的尺寸和位置
+                        const slideWidth = 10; // 投影片寬度 (英吋)
+                        const slideHeight = 5.625; // 投影片高度 (英吋)
+                        const imgRatio = canvas.width / canvas.height;
+                        
+                        let imgWidth, imgHeight, imgX, imgY;
+                        
+                        if (imgRatio > slideWidth / slideHeight) {
+                            // 圖片較寬，以寬度為基準
+                            imgWidth = slideWidth;
+                            imgHeight = slideWidth / imgRatio;
+                            imgX = 0;
+                            imgY = (slideHeight - imgHeight) / 2;
+                        } else {
+                            // 圖片較高，以高度為基準
+                            imgHeight = slideHeight;
+                            imgWidth = slideHeight * imgRatio;
+                            imgX = (slideWidth - imgWidth) / 2;
+                            imgY = 0;
+                        }
+                        
+                        // 將圖片加入投影片
+                        slide.addImage({
+                            data: imgUrl,
+                            x: imgX,
+                            y: imgY,
+                            w: imgWidth,
+                            h: imgHeight
+                        });
+                        
+                        // 立即釋放記憶體
+                        page.cleanup();
+                        canvas.width = 0;
+                        canvas.height = 0;
+                        
+                        successPages++;
+                        
+                        // 如果頁數很多，分批處理
+                        if (totalPages > 50 && i % 20 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 50));
+                        }
+                        
+                    } catch (pageError) {
+                        console.error(`處理第 ${i} 頁時發生錯誤:`, pageError);
+                        failedPages++;
+                        
+                        // 即使轉換失敗，也建立一個空白投影片保持頁碼對應
+                        try {
+                            const slide = pptx.addSlide();
+                            slide.addText(`第 ${i} 頁轉換失敗`, {
+                                x: 0.5,
+                                y: 2.5,
+                                w: 9,
+                                h: 1,
+                                align: 'center',
+                                color: 'FF0000',
+                                fontSize: 24
+                            });
+                        } catch (e) {
+                            console.error('建立錯誤頁失敗:', e);
+                        }
+                        
+                        continue; // 跳過此頁，繼續下一頁
                     }
-                    
-                    // 將圖片加入投影片
-                    slide.addImage({
-                        data: imgUrl,
-                        x: imgX,
-                        y: imgY,
-                        w: imgWidth,
-                        h: imgHeight
-                    });
-                    
-                    // 釋放記憶體
-                    page.cleanup();
                 }
                 
                 // 完成轉換
@@ -587,7 +692,14 @@
                 await pptx.writeFile({ fileName: outputFileName });
                 
                 // 顯示成功訊息
-                showStatus(`轉換成功！已下載檔案：${outputFileName}`, 'success');
+                let resultMessage = `轉換完成！已下載檔案：${outputFileName}`;
+                if (failedPages > 0) {
+                    resultMessage += ` (成功: ${successPages} 頁, 失敗: ${failedPages} 頁)`;
+                } else {
+                    resultMessage += ` (共 ${successPages} 頁)`;
+                }
+                
+                showStatus(resultMessage, failedPages > 0 ? 'info' : 'success');
                 
                 // 啟用按鈕
                 convertBtn.disabled = false;
@@ -628,12 +740,14 @@
                 statusMessage.classList.add('success');
             } else if (type === 'error') {
                 statusMessage.classList.add('error');
+            } else if (type === 'info') {
+                statusMessage.classList.add('info');
             }
             
             statusMessage.style.display = 'block';
             
-            // 自動隱藏成功訊息
-            if (type === 'success') {
+            // 自動隱藏成功/資訊訊息
+            if (type === 'success' || type === 'info') {
                 setTimeout(() => {
                     statusMessage.style.display = 'none';
                 }, 5000);
